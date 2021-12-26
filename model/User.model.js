@@ -1,34 +1,54 @@
-'use strict'
+'use strict';
+const mongoose=require('mongoose');
 
-const mongoose = require('mongoose');
-const timeMeetingSchema=require('../model/timeMeetingSchema')
+// book schema
+const bookSchema=new mongoose.Schema({
+    name:String,
+    description:String,
+    status:String
+})
 
-const userData = new mongoose.Schema({
-    email: { type: String },
-    timeMeeting: [timeMeetingSchema]
-});
+// user schema
+const userSchema= new mongoose.Schema({
+    email:{type:String},
+    books:[bookSchema]
+})
 
-const userModel = mongoose.model('timeMeeting', userData);
 
-const montherSeed = () => {   
-    const seller1={
-        name:'Qusai Slameh',
-        description:'book a meeting on Monday at 5 pm ',
-        status:'Ok'
+
+const userModels=mongoose.model('bookingsys',userSchema);
+
+
+
+const ibrahem= new userModels(
+    {
+        email:'ibrahem.omari96@gmail.com',
+        books:[{
+            name: 'Eloquent javascript',
+            description: 'This is a book about instructing computers',
+            status:'In-stock'
+        } ,
+        {
+            name: 'Al-asoud yl8 bk',
+            description: 'about the relations in love',
+            status:'In-stock'
+        },
+        {
+            name: 'Secret',
+            description: 'how to atract what you want',
+            status:'In-stock'
+        },
+
+        {
+            name: 'fe 8lbi 2untha 3briah ',
+            description: 'story love',
+            status:'out-stock'
+        }
+    
+    ]
     }
-    const seller2= {
-        name:'Hazem Almosa',
-        description:'book a meeting on Monday at 5 pm ',
-        status:'Choose another time, maybe at 12 pm'
-    }
-    const munther = new userModel({
-        email: 'munther.abdlrahman@gmail.com',
-        timeMeeting:[seller1, seller2]
+);
 
-    });
 
-    munther.save();
-    console.log('munther',munther);
-    return (munther);
-}
-module.exports=userModel
+ibrahem.save();
+module.exports=userModels;

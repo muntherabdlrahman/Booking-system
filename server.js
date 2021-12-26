@@ -1,72 +1,64 @@
-'use strict'
-
-const express=require('express');
-const cors=require('cors');
+'use strict';
 require('dotenv').config();
-const mongoose=require('mongoose');
+const express=require('express');
 const app=express();
-
+const axios = require("axios");
+const mongoose=require('mongoose');
+app.use(express.json());
+const PORT = process.env.PORT || 8001
+const cors=require('cors');
 app.use(cors());
 const jwt=require('jsonwebtoken');
 const jwksClient=require('jwks-rsa');
-const testCountroller=require('./controllers/test.controller')
-const muntherSeed=require('./model/User.model')
-const {
-    UserController,
-    userPost,
-    userDelete,
-    updateBook
-        }=require('./controllers/Users.controlles');
-  
-  const PORT = process.env.PORT || 8001
-  
-  app.use(express.json())
-  mongoose.connect('mongodb://localhost:27017/timeMeeting',
-      { useNewUrlParser: true, useUnifiedTopology: true }
-  );
-  
-  app.get('/test',testCountroller);
-  // app.get('/seed',muntherSeed);
+const testCountroller=require("./controllers/test.controller")
 
-  app.get('/books',UserController);
-  
-  app.post('/books',userPost);
-  
-  app.delete('/books/:book_idx',userDelete);
-  
-  app.put('/update-books/:book_idx',updateBook);
-  
-  
-  
-  const client = jwksClient({
-    jwksUri: `https://dev-tiek6efc.us.auth0.com/.well-known/jwks.json`
+const {getbook,addBook,deleteBook,updateBook}=require('./controllers/Users.controlles');
+mongoose.connect('mongodb://localhost:27017/bookingsys',
+    { useNewUrlParser: true, useUnifiedTopology: true }
+);
+
+
+
+app.get('/',
+(req,res)=>res.send('Hello word'))// user end-point
+app.get('/books',getbook);
+app.get('/test',testCountroller);
+
+// user add book end-point
+app.post('/create-books',addBook);
+app.post('/test',addBook);
+
+// user delete book end-point
+app.delete('/delete-books/:index',deleteBook);
+
+// user update book end-point
+app.put('/update-book/:index',updateBook);
+
+const client = jwksClient({
+    // this url comes from your app on the auth0 dashboard 
+    jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
   });
-  
-  
-  const getKey = (header, callback) => {
-    client.getSigningKey(header.kid, function (err, key) {
-      const signingKey = key.publicKey || key.rsaPublicKey;
-      callback(null, signingKey);
-    });
-  }
-  
-  app.get('/authorize',(req,res)=>{
-    console.log(req.headers);
-    try{
-      const token=req.headers.authorization.split('*')[1];
-      jwt.verify(token,getKey,{},(err,user)=>{
-          if(err){
-              res.send('invalid token');
-          }
-          res.send(user)
-      })
-      res.send(token);
-    }catch(error){
-      res.send(error.message)
-    }
-  });
-  
-app.get('/home',
-(req,res)=>res.send('Hello word'))
+
+// this is a ready to use function
+const getKey=(header, callback)=>{
+    client.getSigningKey(header.kid, function(err, key) {
+        const signingKey = key.publicKey || key.rsaPublicKey;
+        callback(null, signingKey);
+      });
+}
+
+// 'Bearer ;alsdkj;laskd;lkasd;lkl'
+app.get('/authorize',(req,res)=>{
+    const token=req.headers.authorization.split(' ')[1];
+    jwt.verify(token,getKey,{},(err,user)=>{
+        if(err){
+            res.send('invalid token');
+        }
+        res.send(user)
+    })
+    res.send(token);
+});
+
 app.listen(process.env.PORT,()=>{
-    console.log(`listening to port: ${process.env.PORT}`)});
+    console.log(`listening to port: ${process.env.PORT}`);
+})

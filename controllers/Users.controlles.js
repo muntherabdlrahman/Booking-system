@@ -1,91 +1,64 @@
-'use strict';
-
-const userModel=require('../model/User.model');
-
-const UserController=(req,res)=>{
-    
-    const searchQ= req.query.email;
-    console.log('req.query.email',req.query.email)
-    userModel.findOne({email:searchQ},(error,user)=>{
-    
-        if(!user){
-            res.send('user not found');
-        }else{
-            // console.log(user.books)
-            res.json(user.books);
+const userModels=require('../model/User.model');
+const getbook=(req,res)=>{
+    let email=req.query.email
+    userModels.findOne({email:email}, (error, user)=>{
+        if (error){
+            res.send(error.message)
         }
-    })
+        res.json(user.books);
+    });
 }
 
-const userPost =(req,res)=>{
-    const{
-        userEmail,
-        name,
-        description,
-        status
-    }=req.body;
-    // console.log(req.body)
-    userModel.findOne({email:userEmail},(error,user)=>{
+// add new book 
+
+const addBook=(req,res)=>{
+    const {email,name,description,status}= req.body;
+    console.log(req.body)
+    
+    userModels.findOne({email:email}, (error, user)=>{
         if(error){
-            res.send('user not found');
+            res.send('error');
         }else{
-            const newBook = {
+            const newData={
+
                 name:name,
                 description:description,
                 status:status
             }
-            user.books.push(newBook);
-            // console.log('neww book',newBook);
-            // console.log('user books',user.books);
+             user.books.push(newData)
             user.save();
-            // console.log(user.books);
-            res.json(user.books);
+            // console.log(book);
+            res.json(user.books)
         }
     })
+        
 }
 
-// const userDelete =(req,res)=>{
-//     const bookIndex = req.params.book_idx;
-//     const email = req.query
+// delete book
+const deleteBook=(req,res)=>{
+    const book_id=Number(req.params.index);
+    const email=req.query.email;
+    userModels.findOne({email:email}, (error, user)=>{
+        let newBookArra=[];
+        user.books.forEach((el,idx)=>{
+            if(idx!==book_id){
+                newBookArra.push(el);
+            }
+        })
+        user.books=newBookArra;
+        user.save();
+        res.send(user.books)
+    });
 
-//     userModel.findOne({email:email},(error,user)=>{
-//         if(error){
-//             res.send('user not found');
-//         }else{
-//             user.books.splice(bookIndex,1);
-//             console.log('bookIndex',bookIndex);
-//             console.log('user books',user.books);
-//             user.save();
-//             // res.send(user.books);
-//             res.send('book deleted')
-//         }
-//     })
-// }
-
-
-const userDelete =(req,res)=>{
-    const bookIndex = req.params.book_idx;
-    const {email} = req.query
-    userModel.findOne({email:email},(error,user)=>{
-        if(error){
-            res.send('user not found');
-        }else{
-            user.books.splice(bookIndex,1);
-            console.log('bookIndex',bookIndex);
-            console.log('user books',user.books);
-            user.save();
-            // res.send(user.books);
-            res.send('book deleted')
-        }
-    })
 }
+
 
 const updateBook=(req,res)=>{
     const {email,name,description,status}= req.body;
-    const book_id=Number(req.params.book_idx);
-    userModel.findOne({email:email}, (error, user)=>{
+    const book_id=Number(req.params.index);
+    userModels.findOne({email:email}, (error, user)=>{
         if (error) {
-            res.send('user not found');
+            res.send(error);
         }
         else{
             user.books.splice(book_id,1,{name:name,description:description,status:status});
@@ -96,10 +69,7 @@ const updateBook=(req,res)=>{
 }
 
 
-module.exports={
-    UserController,
-    userPost,
-    userDelete,
-    updateBook
 
-}
+
+
+module.exports={getbook,addBook,deleteBook,updateBook};

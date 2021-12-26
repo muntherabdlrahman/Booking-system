@@ -4,10 +4,10 @@ const muntherSeed=require('../model/User.model')
 
 const testCountroller =(req,res)=>{
     // res.send('Hello World');
-    const userObject=userSeed();
+    // const userObject=userSeed();
     // res.json(userObject)
 
-    // const userObject=montherSeed();
+    const userObject=muntherSeed();
 
     res.json(userObject)
 }
